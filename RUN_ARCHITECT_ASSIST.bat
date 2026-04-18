@@ -1,43 +1,41 @@
 @echo off
-title ARCHITECT_ASSIST - Professional AI Assistant
+title ARCHITECT_ASSIST - Debug Runner
 setlocal enabledelayedexpansion
 
+:: 1. ยืนยันตำแหน่งโฟลเดอร์
 cd /d "%~dp0"
+echo [Debug] Current Directory: %CD%
 
-echo ============================================================
-echo      ARCHITECT_ASSIST: Starting System...
-echo ============================================================
-echo.
-
-:: 1. Auto-Update (ถ้ามี Git)
-if exist ".git" (
-    echo [System] Checking for new features from GitHub...
-    git pull origin main --quiet >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo [Notice] Skipping update check (Offline).
-    ) else (
-        echo [Success] System is up to date!
-    )
-)
-
-:: 2. Check if Virtual Env exists
+:: 2. ตรวจสอบว่ามี Python ในห้องทำงานจำลองไหม
 if not exist "venv\Scripts\python.exe" (
-    echo [ERROR] Private workspace not found. 
-    echo Please run INSTALL_WINDOWS.bat first.
+    echo [ERROR] ไม่พบห้องทำงานจำลอง (venv)
+    echo กรุณารันไฟล์ INSTALL_WINDOWS.bat ให้เสร็จสมบูรณ์ก่อนครับ
     pause
     exit
 )
 
-:: 3. Check for Data Folder
-if not exist "data" mkdir "data"
-
-:: 4. Launch Application
-echo [System] Launching app...
-"venv\Scripts\python.exe" -m streamlit run src/app.py --browser.gatherUsageStats false
-
-:: Keep window open if it crashes
-if %errorlevel% neq 0 (
-    echo.
-    echo [!!! ERROR !!!] Application stopped unexpectedly.
+:: 3. ตรวจสอบไฟล์โปรแกรม
+if not exist "src\app.py" (
+    echo [ERROR] ไม่พบไฟล์ src\app.py 
+    echo กรุณาตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ที่ถูกต้องหรือไม่
     pause
+    exit
 )
+
+:: 4. พยายามอัปเดต (ถ้าทำได้)
+if exist ".git" (
+    echo [System] Checking for updates...
+    git pull origin main
+)
+
+:: 5. รันโปรแกรมแบบแสดงรายละเอียด (ไม่ซ่อนหน้าจอ)
+echo.
+echo [System] Starting Streamlit...
+echo ---------------------------------------------------
+"venv\Scripts\python.exe" -m streamlit run src/app.py --browser.gatherUsageStats false
+echo ---------------------------------------------------
+echo.
+echo [Debug] Program execution finished.
+echo Exit Code: %errorlevel%
+echo.
+pause
