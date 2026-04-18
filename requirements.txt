@@ -7,5 +7,7 @@ langgraph
 langchain
 langchain-google-vertexai
 langchain-google-genai
+google-cloud-location
 pytest
 python-dotenv
+Pillow
