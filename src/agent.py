@@ -1,6 +1,7 @@
 import os
 from langchain.tools import tool
 from langchain_google_vertexai import ChatVertexAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.prebuilt import create_react_agent
 from src.dxf_parser import DXFParser
 from src.excel_manager import ExcelManager
@@ -43,8 +44,19 @@ def update_boq_cell(file_path: str, sheet_name: str, row: int, col: int, value: 
 
 # --- Agent Setup ---
 
-def get_architect_agent():
-    llm = ChatVertexAI(model_name="gemini-1.5-pro")
+def get_architect_agent(model_name: str = "gemini-1.5-pro", api_key: str = None, use_vertex: bool = False):
+    """
+    Initializes the agent. 
+    Supports Google AI Studio (API Key) or Vertex AI (GCP Credentials).
+    """
+    if use_vertex:
+        llm = ChatVertexAI(model_name=model_name)
+    else:
+        if not api_key:
+            return None
+        # Support for Google AI Studio API
+        llm = ChatGoogleGenerativeAI(model=model_name, google_api_key=api_key)
+    
     tools = [
         get_dxf_summary,
         get_total_line_length,
