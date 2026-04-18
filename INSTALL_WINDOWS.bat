@@ -30,18 +30,27 @@ if %errorlevel% neq 0 (
 )
 
 :: 3. Setup Project
-echo [2/3] Preparing AI Components (This may take a minute)...
-python -m pip install -r requirements.txt --quiet
-python -m pip install Pillow --quiet
+echo [2/3] Preparing AI Components...
+echo [System] Updating installer tool...
+python -m pip install --upgrade pip --quiet
+
+echo [System] Installing required AI libraries (This may take a few minutes)...
+echo [System] Please wait while we download components...
+echo.
+
+:: แสดงความคืบหน้าให้ผู้เห็น (เอา --quiet ออก)
+python -m pip install -r requirements.txt --no-warn-script-location
+python -m pip install Pillow --no-warn-script-location
 
 :: 4. Create Desktop Shortcut (AA ICON)
+echo.
 echo [3/3] Creating Desktop Shortcut (AA BLUE ICON)...
 set "SCRIPT_PATH=%~dp0RUN_ARCHITECT_ASSIST.bat"
 set "WORKING_DIR=%~dp0"
 set "ICON_PATH=%~dp0assets\icon.ico"
 set "SHORTCUT_NAME=ARCHITECT_ASSIST"
 
-:: VBScript Creator with double quotes for safety
+:: VBScript Creator
 echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
 echo sLinkFile = oWS.SpecialFolders("Desktop") ^& "\%SHORTCUT_NAME%.lnk" >> CreateShortcut.vbs
 echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
@@ -59,7 +68,7 @@ echo ============================================================
 echo    ✅ INSTALLATION COMPLETE!
 echo ============================================================
 echo.
-echo [Success] สร้างไอคอน "AA สีฟ้า" ไว้ที่หน้าจอแล้ว!
-echo คุณสามารถเริ่มใช้งานได้ทันทีโดยการดับเบิลคลิกที่ไอคอนครับ
+echo [Success] สร้างไอคอน "AA สีฟ้า" ไว้ที่หน้าจอเรียบร้อย!
+echo คุณสามารถปิดหน้าต่างนี้และเริ่มใช้งานได้ทันทีครับ
 echo.
 pause
