@@ -1,12 +1,29 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 title ARCHITECT_ASSIST: Professional Installer
 echo ============================================================
 echo      🏛️ ARCHITECT_ASSIST: Setup & Installation Wizard
 echo ============================================================
 echo.
 
-:: 1. Check for Python
+:: 1. ตรวจสอบว่ารันจากใน Zip หรือ Temp หรือไม่
+set "CURRENT_DIR=%~dp0"
+echo %CURRENT_DIR% | findstr /I "AppData\Local\Temp Temp1_" >nul
+if %errorlevel%==0 (
+    echo [!!! ERROR !!!]
+    echo ตรวจพบว่าคุณรันตัวติดตั้งจากในไฟล์ ZIP โดยตรง!
+    echo.
+    echo วิธีแก้ไข:
+    echo 1. ปิดหน้าต่างนี้
+    echo 2. คลิกขวาที่ไฟล์ "ARCHITECT_ASSIST.zip"
+    echo 3. เลือก "Extract All..." (ถอนการติดตั้งทั้งหมด)
+    echo 4. เข้าไปในโฟลเดอร์ที่แตกออกมาแล้วค่อยรันไฟล์ "INSTALL_WINDOWS.bat" อีกครั้ง
+    echo.
+    pause
+    exit /b
+)
+
+:: 2. Check for Python
 echo [1/4] Checking for Python...
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
@@ -22,7 +39,7 @@ if %errorlevel% neq 0 (
     echo [Success] Python is already installed.
 )
 
-:: 2. Check for Git
+:: 3. Check for Git
 echo [2/4] Checking for Git...
 git --version >nul 2>&1
 if %errorlevel% neq 0 (
@@ -38,37 +55,29 @@ if %errorlevel% neq 0 (
     echo [Success] Git is already installed.
 )
 
-:: 3. Setup Project
-echo [3/4] Setting up ARCHITECT_ASSIST repository...
-if not exist ".git" (
-    echo Cloning latest code from GitHub...
-    git clone https://github.com/PRIDA-TAKON/ARCHITECT_ASSIST.git .
-) else (
-    echo Repository already exists. Checking for updates...
-    git pull origin main
-)
-
-echo Installing required libraries (this may take a minute)...
+:: 4. Setup Project (No Git check here to keep it simple for downloaded ZIPs)
+echo [3/4] Preparing Project Files...
 pip install -r requirements.txt --quiet
 if %errorlevel% neq 0 (
-    echo [Notice] Retrying pip install...
     python -m pip install -r requirements.txt --quiet
 )
 
-:: 4. Create Desktop Shortcut
-echo [4/4] Creating Desktop Shortcut...
-set SCRIPT_PATH=%~dp0RUN_ARCHITECT_ASSIST.bat
-set SHORTCUT_NAME=ARCHITECT_ASSIST
-set LOGO_PATH=%~dp0assets\icon.ico
+:: 5. Create Desktop Shortcut (More robust path handling)
+echo [4/4] Creating Desktop Shortcut (AA Blue Icon)...
+set "SCRIPT_PATH=%~dp0RUN_ARCHITECT_ASSIST.bat"
+set "WORKING_DIR=%~dp0"
+set "ICON_PATH=%~dp0assets\icon.ico"
+set "SHORTCUT_NAME=ARCHITECT_ASSIST"
 
-:: Creating VBScript to create shortcut with the new AA Icon
-echo set WshShell = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
-echo set oShellLink = WshShell.CreateShortcut(WshShell.SpecialFolders("Desktop") ^& "\%SHORTCUT_NAME%.lnk") >> CreateShortcut.vbs
-echo oShellLink.TargetPath = "%SCRIPT_PATH%" >> CreateShortcut.vbs
-echo oShellLink.WorkingDirectory = "%~dp0" >> CreateShortcut.vbs
-echo oShellLink.IconLocation = "%LOGO_PATH%" >> CreateShortcut.vbs
-echo oShellLink.Description = "ARCHITECT_ASSIST: Your AI Design Partner" >> CreateShortcut.vbs
-echo oShellLink.Save >> CreateShortcut.vbs
+:: สร้าง VBScript แบบระบุตำแหน่งไฟล์ที่แน่นอนและมีเครื่องหมายคำพูดครอบคลุม
+echo Set oWS = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
+echo sLinkFile = oWS.SpecialFolders("Desktop") ^& "\%SHORTCUT_NAME%.lnk" >> CreateShortcut.vbs
+echo Set oLink = oWS.CreateShortcut(sLinkFile) >> CreateShortcut.vbs
+echo oLink.TargetPath = "%SCRIPT_PATH%" >> CreateShortcut.vbs
+echo oLink.WorkingDirectory = "%WORKING_DIR%" >> CreateShortcut.vbs
+echo oLink.IconLocation = "%ICON_PATH%,0" >> CreateShortcut.vbs
+echo oLink.Description = "ARCHITECT_ASSIST: Your AI Design Partner" >> CreateShortcut.vbs
+echo oLink.Save >> CreateShortcut.vbs
 
 cscript /nologo CreateShortcut.vbs
 del CreateShortcut.vbs
@@ -78,7 +87,7 @@ echo ============================================================
 echo    ✅ INSTALLATION COMPLETE!
 echo ============================================================
 echo.
-echo [Success] สร้างไอคอน "ARCHITECT_ASSIST" (AA สีฟ้า) ไว้ที่หน้าจอแล้ว!
-echo คุณสามารถเริ่มใช้งานได้ทันทีโดยการดับเบิลคลิกที่ไอคอนครับ
+echo [Success] สร้างไอคอน "AA สีฟ้า" ไว้ที่หน้าจอเรียบร้อย!
+echo *หากเคยมีไอคอนเก่าที่ใช้ไม่ได้ ให้ลบทิ้งแล้วใช้ไอคอนใหม่นี้แทนครับ*
 echo.
 pause
