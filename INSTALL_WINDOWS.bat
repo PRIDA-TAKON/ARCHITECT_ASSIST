@@ -4,7 +4,7 @@ title ARCHITECT_ASSIST: Professional Installer
 cd /d "%~dp0"
 
 echo ============================================================
-echo      ARCHITECT_ASSIST: Setup Wizard (Pro Version)
+echo      ARCHITECT_ASSIST: Setup Wizard (STABLE 3.11)
 echo ============================================================
 echo.
 
@@ -19,30 +19,29 @@ if %errorlevel% neq 0 (
     exit
 )
 
-:: 2. Create Virtual Environment (The "Safe Box")
+:: 2. Create Virtual Environment
 echo [2/4] Creating a private workspace (Virtual Env)...
-:: ลบของเก่าที่พังทิ้งถ้าจำเป็น (หรือให้ผู้ใช้ลบเอง)
 if not exist "venv" (
-    echo [System] Setting up fresh environment...
+    echo [System] Setting up environment...
     python -m venv venv
 )
 
 :: 3. Install Libraries into the Private Workspace
-echo [3/4] Installing AI components into private workspace...
-echo [System] This may take 2-5 minutes depending on your internet.
-echo [System] Please DO NOT close this window until finished.
+echo [3/4] Installing AI components...
+echo [System] Downloading stable components (Please wait)...
 echo.
 
-:: บังคับให้แสดงรายละเอียดการติดตั้ง (เอา --quiet ออก)
-"venv\Scripts\python.exe" -m pip install --upgrade pip
-"venv\Scripts\python.exe" -m pip install -r requirements.txt --no-warn-script-location
-"venv\Scripts\python.exe" -m pip install Pillow --no-warn-script-location
+:: อัปเดต pip ก่อน
+"venv\Scripts\python.exe" -m pip install --upgrade pip --quiet
 
-:: ตรวจสอบว่า streamlit ติดตั้งสำเร็จไหม
+:: ติดตั้งทีละตัว (เพื่อไม่ให้พังกลางคัน)
+"venv\Scripts\python.exe" -m pip install streamlit pandas openpyxl ezdxf langgraph langchain langchain-google-vertexai langchain-google-genai google-cloud-aiplatform pytest python-dotenv Pillow --no-warn-script-location
+
+:: ตรวจสอบการติดตั้งเบื้องต้น
 if not exist "venv\Scripts\streamlit.exe" (
     echo.
-    echo [!!! ERROR !!!] Installation failed to complete.
-    echo Please check your internet connection and try running this again.
+    echo [!!! ERROR !!!] Installation failed to complete streamlit component.
+    echo Please check your internet and try again.
     pause
     exit
 )
@@ -72,7 +71,7 @@ echo ============================================================
 echo    ✅ INSTALLATION COMPLETE!
 echo ============================================================
 echo.
-echo [Success] ทุกอย่างพร้อมใช้งานแล้ว!
-echo คุณสามารถเปิดโปรแกรมผ่านไอคอน "AA สีฟ้า" ที่หน้าจอได้เลยครับ
+echo [Success] ทุกอย่างพร้อมใช้งาน 100% แล้วครับ!
+echo คุณสามารถรันโปรแกรมผ่านไอคอน "AA สีฟ้า" ที่หน้าจอได้เลย
 echo.
 pause

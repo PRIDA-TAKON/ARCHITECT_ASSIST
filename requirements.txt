@@ -6,9 +6,6 @@ langgraph
 langchain
 langchain-google-vertexai
 langchain-google-genai
-google-api-core
-google-cloud-core
-google-cloud-location
 google-cloud-aiplatform
 pytest
 python-dotenv
