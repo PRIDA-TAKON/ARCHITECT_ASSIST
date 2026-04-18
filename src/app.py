@@ -17,12 +17,12 @@ with st.sidebar:
     if provider == "Google AI Studio (API Key)":
         api_key = st.text_input("Google API Key", type="password", help="Get your key from https://aistudio.google.com/app/apikey")
         model_name = st.selectbox("Model", [
-            "gemini-3.1-flash",
-            "gemini-3.1-pro",
+            "gemini-3.1-flash-lite-preview",
+            "gemini-3.1-pro-preview",
             "gemini-2.5-flash",
-            "gemini-2.5-pro",
-            "gemma-4-31b",
-            "gemma-3-27b"
+            "gemma-4-31b-it",
+            "gemma-4-26b-a4b-it",
+            "gemma-3-27b-it"
         ])
         use_vertex = False
     else:
