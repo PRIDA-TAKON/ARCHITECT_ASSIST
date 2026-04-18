@@ -10,7 +10,7 @@ class ExcelManager:
             # Create a blank excel if it doesn't exist
             df = pd.DataFrame()
             df.to_excel(file_path, index=False)
-        self.wb = openpyxl.load_file(file_path)
+        self.wb = openpyxl.load_workbook(file_path)
 
     def read_sheet(self, sheet_name: str = None) -> pd.DataFrame:
         """Reads a specific sheet into a pandas DataFrame."""
