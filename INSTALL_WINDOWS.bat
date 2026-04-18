@@ -61,12 +61,13 @@ set SCRIPT_PATH=%~dp0RUN_ARCHITECT_ASSIST.bat
 set SHORTCUT_NAME=ARCHITECT_ASSIST
 set LOGO_PATH=%~dp0assets\icon.ico
 
-:: Creating VBScript to create shortcut
+:: Creating VBScript to create shortcut with the new AA Icon
 echo set WshShell = WScript.CreateObject("WScript.Shell") > CreateShortcut.vbs
 echo set oShellLink = WshShell.CreateShortcut(WshShell.SpecialFolders("Desktop") ^& "\%SHORTCUT_NAME%.lnk") >> CreateShortcut.vbs
 echo oShellLink.TargetPath = "%SCRIPT_PATH%" >> CreateShortcut.vbs
 echo oShellLink.WorkingDirectory = "%~dp0" >> CreateShortcut.vbs
-echo oShellLink.Description = "AI Assistant for Architects" >> CreateShortcut.vbs
+echo oShellLink.IconLocation = "%LOGO_PATH%" >> CreateShortcut.vbs
+echo oShellLink.Description = "ARCHITECT_ASSIST: Your AI Design Partner" >> CreateShortcut.vbs
 echo oShellLink.Save >> CreateShortcut.vbs
 
 cscript /nologo CreateShortcut.vbs
@@ -77,7 +78,7 @@ echo ============================================================
 echo    ✅ INSTALLATION COMPLETE!
 echo ============================================================
 echo.
-echo You can now find the "ARCHITECT_ASSIST" icon on your Desktop.
-echo Please restart this terminal or your computer if this is the first time installing Python.
+echo [Success] สร้างไอคอน "ARCHITECT_ASSIST" (AA สีฟ้า) ไว้ที่หน้าจอแล้ว!
+echo คุณสามารถเริ่มใช้งานได้ทันทีโดยการดับเบิลคลิกที่ไอคอนครับ
 echo.
 pause
