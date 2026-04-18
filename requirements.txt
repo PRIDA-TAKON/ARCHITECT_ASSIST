@@ -1,0 +1,9 @@
+ezdxf
+pandas
+openpyxl
+streamlit
+langgraph
+langchain
+langchain-google-vertexai
+pytest
+python-dotenv
