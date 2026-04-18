@@ -4,42 +4,40 @@ title ARCHITECT_ASSIST: Professional Installer
 cd /d "%~dp0"
 
 echo ============================================================
-echo      ARCHITECT_ASSIST: Setup Wizard (STABLE VERSION)
+echo      ARCHITECT_ASSIST: Setup Wizard (Pro Version)
 echo ============================================================
 echo.
 
-:: 1. Check Python Version (Must not be 3.14+)
-echo [1/3] Checking Python Compatibility...
-for /f "tokens=2" %%v in ('python --version 2^>^&1') do set "PY_VER=%%v"
-echo Current Python: !PY_VER!
-
-set "IS_INCOMPATIBLE=0"
-echo !PY_VER! | findstr "3.14" >nul && set "IS_INCOMPATIBLE=1"
-echo !PY_VER! | findstr "3.15" >nul && set "IS_INCOMPATIBLE=1"
-
-if "!IS_INCOMPATIBLE!"=="1" (
-    echo.
-    echo [⚠️ WARNING] Python 3.14+ is NOT compatible with Google AI libraries.
-    echo [System] Attempting to install STABLE Python 3.12 via winget...
+:: 1. Check for Python
+echo [1/4] Checking for Python...
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [Notice] Python not found. Installing Python 3.12...
     winget install --id Python.Python.3.12 --exact --silent --accept-package-agreements --accept-source-agreements
-    if %errorlevel% neq 0 (
-        echo [Error] Please UNINSTALL Python 3.14 and manually install Python 3.12
-        pause
-        exit /b
-    )
-    echo [Success] Python 3.12 installed. PLEASE CLOSE THIS WINDOW AND RUN AGAIN.
+    echo [Success] Please RESTART this installer.
     pause
-    exit /b
+    exit
 )
 
-:: 2. Setup Project
-echo [2/3] Preparing AI Components (Stable 3.12)...
-python -m pip install --upgrade pip --quiet
-python -m pip install -r requirements.txt --no-warn-script-location
-python -m pip install Pillow --no-warn-script-location
+:: 2. Create Virtual Environment (The "Safe Box")
+echo [2/4] Creating a private workspace (Virtual Env)...
+if not exist "venv" (
+    python -m venv venv
+)
 
-:: 3. Create Desktop Shortcut (AA ICON)
-echo [3/3] Creating Desktop Shortcut (AA BLUE ICON)...
+:: 3. Install Libraries into the Private Workspace
+echo [3/4] Installing AI components into private workspace...
+echo [System] This keeps your computer clean and avoids conflicts.
+echo.
+
+:: เรียกใช้ pip จากใน venv โดยตรง เพื่อไม่ให้ตีกับระบบหลัก
+"venv\Scripts\python.exe" -m pip install --upgrade pip --quiet
+"venv\Scripts\python.exe" -m pip install -r requirements.txt --no-warn-script-location
+"venv\Scripts\python.exe" -m pip install Pillow --no-warn-script-location
+
+:: 4. Create Desktop Shortcut
+echo.
+echo [4/4] Creating Desktop Shortcut (AA BLUE ICON)...
 set "SCRIPT_PATH=%~dp0RUN_ARCHITECT_ASSIST.bat"
 set "WORKING_DIR=%~dp0"
 set "ICON_PATH=%~dp0assets\icon.ico"
@@ -63,6 +61,6 @@ echo    ✅ INSTALLATION COMPLETE!
 echo ============================================================
 echo.
 echo [Success] สร้างไอคอน "AA สีฟ้า" ไว้ที่หน้าจอเรียบร้อย!
-echo คุณสามารถปิดหน้าต่างนี้และเริ่มใช้งานได้ทันทีครับ
+echo *ตอนนี้โปรแกรมถูกแยกส่วนไว้ใน "โฟลเดอร์ส่วนตัว" ไม่ตีกับใครแน่นอนครับ*
 echo.
 pause
