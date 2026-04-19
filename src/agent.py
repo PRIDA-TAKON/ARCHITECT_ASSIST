@@ -1,23 +1,10 @@
 import os
-import httpx
-from typing import Any, List, Optional, Dict, Union
 from langchain.tools import tool
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from src.dxf_parser import DXFParser
 from src.excel_manager import ExcelManager
-
-# --- Custom HTTP Client for ThaiLLM ---
-# This client removes the 'Authorization' header that LangChain/OpenAI adds by default,
-# because the thaillm.or.th server is sensitive and only wants the 'apikey' header.
-
-class ThaiLLMClient(httpx.Client):
-    def send(self, request: httpx.Request, **kwargs: Any) -> httpx.Response:
-        if "authorization" in request.headers:
-            del request.headers["authorization"]
-        return super().send(request, **kwargs)
 
 # --- DXF Tools ---
 
@@ -60,27 +47,14 @@ def update_boq_cell(file_path: str, sheet_name: str, row: int, col: int, value: 
 def get_architect_agent(model_name: str = "gemini-1.5-pro", api_key: str = None, use_vertex: bool = False):
     """
     Initializes the agent. 
-    Supports Google AI Studio (API Key), Vertex AI (GCP Credentials), or ThaiLLM.
+    Supports Google AI Studio (API Key) or Vertex AI (GCP Credentials).
     """
-    if "Pathumma" in model_name:
-        # Support for ThaiLLM (Pathumma)
-        # We use ChatOpenAI with a custom http_client to remove the 'Authorization' header
-        # that causes the 'Blocked' error, while keeping the native 'bind_tools' support.
-        llm = ChatOpenAI(
-            model="/model",
-            openai_api_key=api_key,
-            openai_api_base="http://thaillm.or.th/api/pathumma/v1",
-            default_headers={"apikey": api_key},
-            http_client=ThaiLLMClient(),
-            max_retries=2,
-            temperature=0.3
-        )
-    elif use_vertex:
+    if use_vertex:
         llm = ChatVertexAI(model_name=model_name)
     else:
         if not api_key:
             return None
-        # Support for Google AI Studio API
+        # Support for Google AI Studio API (Gemini/Gemma)
         llm = ChatGoogleGenerativeAI(model=model_name, google_api_key=api_key)
     
     tools = [

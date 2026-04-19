@@ -15,7 +15,7 @@ with st.sidebar:
     st.header("⚙️ Configuration")
     
     # Selection of API Provider
-    provider = st.radio("API Provider", ["Google AI Studio (API Key)", "Vertex AI (Google Cloud)", "ThaiLLM (Pathumma)"])
+    provider = st.radio("API Provider", ["Google AI Studio (API Key)", "Vertex AI (Google Cloud)"])
     
     if provider == "Google AI Studio (API Key)":
         api_key = st.text_input("Google API Key", type="password", help="Get your key from https://aistudio.google.com/app/apikey")
@@ -27,11 +27,6 @@ with st.sidebar:
             "gemma-4-26b-a4b-it",
             "gemma-3-27b-it"
         ])
-        use_vertex = False
-    elif provider == "ThaiLLM (Pathumma)":
-        api_key = st.text_input("ThaiLLM API Key", type="password", help="Enter your ThaiLLM API Key")
-        model_name = "Pathumma-ThaiLLM-qwen3-8b-think-3.0.0"
-        st.info(f"Using model: {model_name}")
         use_vertex = False
     else:
         project_id = st.text_input("Google Cloud Project ID", placeholder="e.g. my-architect-project")
@@ -111,7 +106,7 @@ if prompt := st.chat_input("How can I help you today?"):
                 # Get the last message from the agent
                 ai_msg_raw = response["messages"][-1].content
                 
-                # Handle multi-part responses (thinking and text blocks)
+                # Handle multi-part responses (thinking and text blocks) for Gemma/Gemini
                 ai_msg = ""
                 thinking = ""
                 
@@ -125,16 +120,9 @@ if prompt := st.chat_input("How can I help you today?"):
                         else:
                             ai_msg += str(part)
                 else:
-                    # Some models use <think> tags in a string
                     ai_msg = str(ai_msg_raw)
-                    if "<think>" in ai_msg and "</think>" in ai_msg:
-                        import re
-                        match = re.search(r"<think>(.*?)</think>(.*)", ai_msg, re.DOTALL)
-                        if match:
-                            thinking = match.group(1).strip()
-                            ai_msg = match.group(2).strip()
 
-                # Display thinking if exists
+                # Display thinking if exists (useful for Gemma 3/Gemini 2.0 Think)
                 if thinking:
                     with st.expander("💭 Thought Process"):
                         st.markdown(thinking)
