@@ -1,6 +1,9 @@
 import streamlit as st
 import os
+from dotenv import load_dotenv
 from src.agent import get_architect_agent
+
+load_dotenv()
 
 st.set_page_config(page_title="ARCHITECT_ASSIST", layout="wide")
 
@@ -12,7 +15,7 @@ with st.sidebar:
     st.header("⚙️ Configuration")
     
     # Selection of API Provider
-    provider = st.radio("API Provider", ["Google AI Studio (API Key)", "Vertex AI (Google Cloud)"])
+    provider = st.radio("API Provider", ["Google AI Studio (API Key)", "Vertex AI (Google Cloud)", "ThaiLLM (Pathumma)"])
     
     if provider == "Google AI Studio (API Key)":
         api_key = st.text_input("Google API Key", type="password", help="Get your key from https://aistudio.google.com/app/apikey")
@@ -24,6 +27,11 @@ with st.sidebar:
             "gemma-4-26b-a4b-it",
             "gemma-3-27b-it"
         ])
+        use_vertex = False
+    elif provider == "ThaiLLM (Pathumma)":
+        api_key = st.text_input("ThaiLLM API Key", type="password", help="Enter your ThaiLLM API Key")
+        model_name = "Pathumma-ThaiLLM-qwen3-8b-think-3.0.0"
+        st.info(f"Using model: {model_name}")
         use_vertex = False
     else:
         project_id = st.text_input("Google Cloud Project ID", placeholder="e.g. my-architect-project")
@@ -41,12 +49,14 @@ with st.sidebar:
     uploaded_xlsx = st.file_uploader("Upload BOQ Excel (Template)", type=["xlsx"])
     
     if uploaded_dxf:
+        os.makedirs("data", exist_ok=True)
         dxf_path = os.path.join("data", uploaded_dxf.name)
         with open(dxf_path, "wb") as f:
             f.write(uploaded_dxf.getbuffer())
         st.success(f"Loaded: {uploaded_dxf.name}")
 
     if uploaded_xlsx:
+        os.makedirs("data", exist_ok=True)
         xlsx_path = os.path.join("data", uploaded_xlsx.name)
         with open(xlsx_path, "wb") as f:
             f.write(uploaded_xlsx.getbuffer())
