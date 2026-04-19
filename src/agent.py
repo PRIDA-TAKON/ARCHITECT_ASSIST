@@ -1,67 +1,23 @@
 import os
-import requests
-import json
-from typing import Any, List, Optional, Dict
+import httpx
+from typing import Any, List, Optional, Dict, Union
 from langchain.tools import tool
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import BaseMessage, AIMessage, HumanMessage, SystemMessage
-from langchain_core.outputs import ChatResult, ChatGeneration
+from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from src.dxf_parser import DXFParser
 from src.excel_manager import ExcelManager
 
-# --- Custom LLM for ThaiLLM (Pathumma) ---
+# --- Custom HTTP Client for ThaiLLM ---
+# This client removes the 'Authorization' header that LangChain/OpenAI adds by default,
+# because the thaillm.or.th server is sensitive and only wants the 'apikey' header.
 
-class ThaiLLMChat(BaseChatModel):
-    """Custom Chat Model for ThaiLLM following sample_thaiLL.md precisely."""
-    api_key: str
-    model_name: str = "/model"
-    endpoint: str = "http://thaillm.or.th/api/pathumma/v1/chat/completions"
-
-    def _generate(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[Any] = None,
-        **kwargs: Any,
-    ) -> ChatResult:
-        payload_messages = []
-        for m in messages:
-            if isinstance(m, HumanMessage):
-                payload_messages.append({"role": "user", "content": m.content})
-            elif isinstance(m, AIMessage):
-                payload_messages.append({"role": "assistant", "content": m.content})
-            elif isinstance(m, SystemMessage):
-                payload_messages.append({"role": "system", "content": m.content})
-
-        # Payload exactly as in sample_thaiLL.md
-        payload = {
-            "model": self.model_name,
-            "messages": payload_messages,
-            "max_tokens": 2048,
-            "temperature": 0.3
-        }
-        
-        # Headers exactly as in sample_thaiLL.md
-        headers = {
-            "Content-Type": "application/json",
-            "apikey": self.api_key
-        }
-
-        response = requests.post(self.endpoint, headers=headers, json=payload)
-        response.raise_for_status()
-        data = response.json()
-        
-        content = data["choices"][0]["message"]["content"]
-        message = AIMessage(content=content)
-        generation = ChatGeneration(message=message)
-        return ChatResult(generations=[generation])
-
-    @property
-    def _llm_type(self) -> str:
-        return "thaillm-chat"
+class ThaiLLMClient(httpx.Client):
+    def send(self, request: httpx.Request, **kwargs: Any) -> httpx.Response:
+        if "authorization" in request.headers:
+            del request.headers["authorization"]
+        return super().send(request, **kwargs)
 
 # --- DXF Tools ---
 
@@ -107,8 +63,18 @@ def get_architect_agent(model_name: str = "gemini-1.5-pro", api_key: str = None,
     Supports Google AI Studio (API Key), Vertex AI (GCP Credentials), or ThaiLLM.
     """
     if "Pathumma" in model_name:
-        # Support for ThaiLLM (Pathumma) via custom class
-        llm = ThaiLLMChat(api_key=api_key)
+        # Support for ThaiLLM (Pathumma)
+        # We use ChatOpenAI with a custom http_client to remove the 'Authorization' header
+        # that causes the 'Blocked' error, while keeping the native 'bind_tools' support.
+        llm = ChatOpenAI(
+            model="/model",
+            openai_api_key=api_key,
+            openai_api_base="http://thaillm.or.th/api/pathumma/v1",
+            default_headers={"apikey": api_key},
+            http_client=ThaiLLMClient(),
+            max_retries=2,
+            temperature=0.3
+        )
     elif use_vertex:
         llm = ChatVertexAI(model_name=model_name)
     else:
