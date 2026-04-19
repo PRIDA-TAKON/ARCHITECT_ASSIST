@@ -109,8 +109,39 @@ if prompt := st.chat_input("How can I help you today?"):
                 response = agent.invoke({"messages": [("user", full_prompt)]})
                 
                 # Get the last message from the agent
-                ai_msg = response["messages"][-1].content
+                ai_msg_raw = response["messages"][-1].content
+                
+                # Handle multi-part responses (thinking and text blocks)
+                ai_msg = ""
+                thinking = ""
+                
+                if isinstance(ai_msg_raw, list):
+                    for part in ai_msg_raw:
+                        if isinstance(part, dict):
+                            if part.get("type") == "text":
+                                ai_msg += part.get("text", "")
+                            elif part.get("type") == "thinking":
+                                thinking += part.get("thinking", "")
+                        else:
+                            ai_msg += str(part)
+                else:
+                    # Some models use <think> tags in a string
+                    ai_msg = str(ai_msg_raw)
+                    if "<think>" in ai_msg and "</think>" in ai_msg:
+                        import re
+                        match = re.search(r"<think>(.*?)</think>(.*)", ai_msg, re.DOTALL)
+                        if match:
+                            thinking = match.group(1).strip()
+                            ai_msg = match.group(2).strip()
+
+                # Display thinking if exists
+                if thinking:
+                    with st.expander("💭 Thought Process"):
+                        st.markdown(thinking)
+                
+                # Display final answer
                 st.markdown(ai_msg)
                 st.session_state.messages.append({"role": "assistant", "content": ai_msg})
+                
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
