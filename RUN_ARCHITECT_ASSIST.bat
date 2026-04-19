@@ -1,11 +1,24 @@
 @echo off
-title ARCHITECT_ASSIST
+title 🏛️ ARCHITECT_ASSIST: Checking for Updates
 cd /d "%~dp0"
 
-:: 1. อัปเดตข้อมูลโมเดลใหม่จาก GitHub อัตโนมัติ
-git pull origin main --quiet >nul 2>&1
+echo ==========================================
+echo    🏛️ ARCHITECT_ASSIST: Auto-Update
+echo ==========================================
 
-:: 2. รันโปรแกรมทันที (ใช้ตัว Python ในห้องทำงานส่วนตัวที่เราสร้างไว้ตอนติดตั้ง)
+:: 1. อัปเดตข้อมูลโค้ดใหม่จาก GitHub
+echo.
+echo [1/2] Checking for new features from GitHub...
+git pull origin main
+
+:: 2. อัปเดตไลบรารี (Requirements)
+echo.
+echo [2/2] Installing/Updating requirements...
+"venv\Scripts\python.exe" -m pip install -r requirements.txt --quiet
+
+:: 3. รันโปรแกรม
+echo.
+echo Starting ARCHITECT_ASSIST...
 "venv\Scripts\python.exe" -m streamlit run src/app.py --browser.gatherUsageStats false
 
 pause
