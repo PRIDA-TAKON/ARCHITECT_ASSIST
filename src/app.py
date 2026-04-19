@@ -20,18 +20,14 @@ with st.sidebar:
     if provider == "Google AI Studio (API Key)":
         api_key = st.text_input("Google API Key", type="password", help="Get your key from https://aistudio.google.com/app/apikey")
         model_name = st.selectbox("Model", [
-            "gemini-3.1-flash-lite-preview",
-            "gemini-3.1-pro-preview",
-            "gemini-2.5-flash",
-            "gemma-4-31b-it",
-            "gemma-4-26b-a4b-it",
-            "gemma-3-27b-it"
+            "gemma-2-27b-it",
+            "gemma-2-9b-it"
         ])
         use_vertex = False
     else:
         project_id = st.text_input("Google Cloud Project ID", placeholder="e.g. my-architect-project")
         location = st.text_input("Location", value="us-central1")
-        model_name = st.selectbox("Model", ["gemini-3.1-pro", "gemini-3.1-flash"])
+        model_name = st.selectbox("Model", ["gemma-2-27b"])
         if project_id:
             os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
         use_vertex = True
@@ -106,7 +102,7 @@ if prompt := st.chat_input("How can I help you today?"):
                 # Get the last message from the agent
                 ai_msg_raw = response["messages"][-1].content
                 
-                # Handle multi-part responses (thinking and text blocks) for Gemma/Gemini
+                # Handle multi-part responses (thinking and text blocks) for Gemma
                 ai_msg = ""
                 thinking = ""
                 
@@ -122,7 +118,7 @@ if prompt := st.chat_input("How can I help you today?"):
                 else:
                     ai_msg = str(ai_msg_raw)
 
-                # Display thinking if exists (useful for Gemma 3/Gemini 2.0 Think)
+                # Display thinking if exists (useful for Gemma 2/3 Think)
                 if thinking:
                     with st.expander("💭 Thought Process"):
                         st.markdown(thinking)
