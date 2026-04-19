@@ -21,14 +21,13 @@ with st.sidebar:
         api_key = st.text_input("Google API Key", type="password", help="Get your key from https://aistudio.google.com/app/apikey")
         model_name = st.selectbox("Model", [
             "gemma-4-31b-it",
-            "gemma-4-26b-a4b-it",
-            "gemma-3-27b-it"
+            "gemma-4-26b-a4b-it"
         ])
         use_vertex = False
     else:
         project_id = st.text_input("Google Cloud Project ID", placeholder="e.g. my-architect-project")
         location = st.text_input("Location", value="us-central1")
-        model_name = st.selectbox("Model", ["gemma-4-31b-it", "gemma-2-27b"])
+        model_name = st.selectbox("Model", ["gemma-4-31b-it", "gemma-4-26b-a4b-it"])
         if project_id:
             os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
         use_vertex = True
